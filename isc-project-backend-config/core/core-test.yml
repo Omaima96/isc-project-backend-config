@@ -1,0 +1,10 @@
+application:
+  url: https://137.184.73.99
+
+elasticsearch:
+  host: elasticsearch
+  port: 9200
+
+logging:
+  level:
+    root: INFO

@@ -1,0 +1,140 @@
+server:
+  port: 8080
+  shutdown: graceful
+  max-servlet-header-size: 64KB
+  max-http-header-size: 64KB
+  servlet:
+    context-path: /core
+
+application:
+  url: http://localhost
+
+spring:
+  mvc:
+    dispatch-options-request: true
+  zipkin:
+    enabled: true
+    base-url: http://zipkin:9411/
+  datasource:
+    url: jdbc:mysql://localhost:3306/isc?createDatabaseIfNotExist=true&useSSL=false&serverTimezone=UTC&useLegacyDatetimeCode=false&allowPublicKeyRetrieval=true
+    driverClassName: com.mysql.cj.jdbc.Driver
+    username: root
+    password: root
+  jpa:
+    defer-datasource-initialization: true
+    hibernate:
+      ddl-auto: update
+    database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+    show-sql: true
+
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    stream:
+      bindings:
+        mail-out-0:
+          destination: queue.email.messages
+          group: notification-email
+          binder: rabbit
+ #       invito-in-0:
+ #         destination: queue.inviti.finalizzazione
+ #         group: finalizza-invito
+ #         binder: rabbit
+      binders:
+        rabbit:
+          type: rabbit
+          environment:
+            spring:
+              rabbitmq:
+                host: rabbitmq
+                port: 5672
+                username: admin
+                password: S8b?hRqlfi!1N
+
+
+eureka:
+  client:
+    region: default
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://isc:4RKsJQfuvvuG@localhost:8761/eureka/
+  instance:
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
+      "prometheus.port": "8081"
+      "sys.module": "core"
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 10000
+        readTimeout: 10000
+  circuitbreaker:
+    enabled: true
+    alphanumeric-ids:
+      enabled: true
+
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        failureRateThreshold: 70
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 10
+        slowCallRateThreshold: 90
+        permittedNumberOfCallsInHalfOpenState: 5
+        waitDurationInOpenState: 30s
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+    instances:
+      notifications:
+        baseConfig: default
+
+management:
+  security:
+    enabled: false
+  server:
+    port: 8081
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: WHEN_AUTHORIZED
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+jwt:
+  lifetime:
+    default: 3600000
+    remember-me: 2592000000
+  key:
+    public: MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAnR0MzKkY8VDr6dgt+nDkD2nqCJtXlCkQfg5VP6lHJB5XoZRbH48cqyNYa30JRJkFZwG6f690McVlBC4u8ABaHzppfFN7ps3Q7oJQqYH0kjWh+gWhjoHAzIzPdl+fAZmE0WFU10/ia+/FvT/R5aEvE0aGzfHMJHsAcFFC8GmrN7jhD68wue6YLDzmrd+KhqhxevtbJJb1JtGBQB9AXKB/Up5t8cQdbLnMYZonfuUF3daujzVqKPYKEdLH5h4wAWAhVA8jssPWgJXe2QLJezfdenR7TC3bKIAjgAq5arpCDbAZcj2I5K5W+cIyEmiGACJjWDe2hJCizgjzX2uGASiXBwIDAQAB
+
+elasticsearch:
+  host: localhost
+  port: 9200
+
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: DEBUG
+        type:
+          descriptor:
+            sql:
+              BasicBinder: TRACE
+
+

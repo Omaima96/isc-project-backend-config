@@ -1,0 +1,78 @@
+server:
+  port: 8080
+  shutdown: graceful
+  max-http-header-size: 64KB
+
+
+eureka:
+  client:
+    region: default
+    registryFetchIntervalSeconds: 5
+    serviceUrl:
+      defaultZone: http://isc:4RKsJQfuvvuG@localhost:8761/eureka/
+  instance:
+    # prefer-ip-address: true
+    metadata-map:
+      "prometheus.scrape": "true"
+      "prometheus.path": "/actuator/prometheus"
+      "prometheus.port": "8081"
+      "sys.module": "core"
+
+spring:
+  sleuth:
+    enabled: true
+    sampler.probability: 1
+  zipkin:
+    enabled: true
+    base-url: http://zipkin:9411/
+  cloud:
+    loadbalancer:
+      ribbon:
+        enabled: false
+    gateway: 
+      httpclient:
+        connect-timeout: 1000
+        response-timeout: 10s
+      routes:
+        ### AUTHENTICATION SERVER ROUTES CONFIGURATION ###
+        - id: Authentication
+          uri: lb://AUTH
+          predicates:
+            - Path=/auth/**
+        ### CORE SERVER ROUTES CONFIGURATION ###
+        - id: core
+          uri: lb://core
+          predicates:
+            - Path=/core/**
+        ### NOTIFICATIONS SERVER ROUTES CONFIGURATION ###
+        - id: notifications
+          uri: lb://notifications
+          predicates:
+            - Path=/notifications/**
+
+management:
+  security:
+    enabled: false
+  server:
+    port: 8081
+  health:
+    circuitbreakers:
+      enabled: true
+  endpoint:
+    health:
+      show-details: WHEN_AUTHORIZED
+      prometheus:
+        enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    root: WARN
+

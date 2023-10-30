@@ -1,0 +1,10 @@
+application:
+  url: http://164.92.113.35
+
+elasticsearch:
+  host: elasticsearch
+  port: 9200
+
+logging:
+  level:
+    root: WARN
